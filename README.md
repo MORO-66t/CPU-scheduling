@@ -1,9 +1,4 @@
-<<<<<<< HEAD
-# cpu-scheduling-sim
-CPU Scheduling Simulator
 
-This application is built for our OS mini project. 
-=======
 <h1>CPU scheduling By Round robin </h1>
 
 <h3>Description: </h3>
@@ -28,4 +23,3 @@ This application is built for our OS mini project.
   
   
   <\i>
->>>>>>> 378287241e9294c0df67ca64e7644879cccb7236
