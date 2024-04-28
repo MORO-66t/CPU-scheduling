@@ -47,89 +47,221 @@ $(document).ready(
             else roundRobin();
             
         });
-        function Process(pid, burstTime, arrivalTime) {
-            this.pid = pid;
-            this.burstTime = burstTime;
-            this.arrivalTime = arrivalTime;
-            this.waitingTime = 0;
-            this.turnaroundTime = 0;
-            this.remainingTime = burstTime; // Used for tracking remaining burst time
+        function roundRobin() {
+          var timeQuantum = $('#timeQuantum');
+          var timeQuantumVal= parseInt(timeQuantum.val(), 10);
+          if(timeQuantum.val() ==''){
+              alert('Please enter time quantum');
+              timeQuantum.addClass('is-invalid');
+              return;
           }
-          
-          function findWaitingTime(processes, timeQuantum) {
-            let current_time = 0;
-            let completed = 0;
-            let queue = [];
-          
-            while (completed != processes.length) {
-              // Add processes that arrived at current time to the queue
-              for (let i = 0; i < processes.length; i++) {
-                if (processes[i].arrivalTime <= current_time && !queue.includes(processes[i])) {
-                  queue.push(processes[i]);
-                }
+          var completedList = [];
+          var time = 0;
+          var queue = [];
+          var i = 0;
+          while (processList.length > 0 || queue.length > 0) {
+              addToQueue();
+              while (queue.length == 0) {               
+                  time++;
+                  addToQueue();
               }
-          
-              if (queue.length > 0) {
-                let process = queue.shift();
-                let timeSlice = Math.min(process.remainingTime, timeQuantum);
-                process.remainingTime -= timeSlice;
-                current_time += timeSlice;
-          
-                process.waitingTime += current_time - process.burstTime - process.arrivalTime;
-          
-                if (process.remainingTime === 0) {
-                  completed++;
-                  process.turnaroundTime = process.burstTime + process.waitingTime;
-                } else {
-                  queue.push(process); // Add unfinished process back to the queue
-                }
-              } else {
-                // No processes ready, advance time
-                current_time++;
+            
+              selectProcessForRR();
+              i = 1;
+          }
+
+          function addToQueue() {
+              for(var i = 0; i < processList.length; i++) {
+                  if(processList[i].arrivalTime === time) {
+                      var process = {
+                          processID: processList[i].processID, 
+                          arrivalTime: processList[i].arrivalTime, 
+                          burstTime: processList[i].burstTime
+                      }
+                      processList.splice(i, 1);
+                      queue.push(process);
+                  }
               }
-            }
           }
-          
-          function findAverageTime(processes) {
-            let avgWaitingTime = 0;
-            let avgTurnaroundTime = 0;
-          
-            for (let process of processes) {
-              avgWaitingTime += process.waitingTime;
-              avgTurnaroundTime += process.turnaroundTime;
-            }
-          
-            avgWaitingTime /= processes.length;
-            avgTurnaroundTime /= processes.length;
-          
-            console.log("Average Waiting Time:", avgWaitingTime.toFixed(2));
-            console.log("Average Turnaround Time:", avgTurnaroundTime.toFixed(2));
+          function selectProcessForRR() {
+              if (queue.length!=0) {
+                  let q = queue.shift();
+                  queue.push(q);
+                                              
+                  if (queue[0].burstTime < timeQuantumVal) {
+                      process = queue.shift();
+                      process.completedTime = time + process.burstTime;
+                          
+                      for (var index = 0; index < process.burstTime; index++) {
+                          time++;
+                          addToQueue(); 
+                      }
+                      completedList.push(process);
+
+                  }
+                  else if(queue[0].burstTime == timeQuantumVal){
+                      process = queue.shift();
+                      process.completedTime = time + timeQuantumVal;
+                      completedList.push(process);
+
+                      for (var index = 0; index < timeQuantumVal; index++) {
+                          time++;
+                          addToQueue();   
+                      }
+                  }  
+                  else if(queue[0].burstTime > timeQuantumVal){
+                      process = queue[0];
+                      queue[0].burstTime = process.burstTime - timeQuantumVal;
+
+                      for (var index = 0; index < timeQuantumVal; index++) {
+                          time++;
+                          addToQueue();
+                      }
+                  }   
+              }
+              i = 1;
           }
+
+          // Fetch initial table data
+          var TableData = [];
+          $('#tblProcessList tr').each(function(row, tr) {
+              TableData[row] = {
+                  "processID": parseInt($(tr).find('td:eq(0)').text()),
+                  "arrivalTime": parseInt($(tr).find('td:eq(1)').text()),
+                  "burstTime": parseInt($(tr).find('td:eq(2)').text())
+              }
+          });
+
+          // Remove table header row
+          TableData.splice(0, 1);
           
-          function roundRobin(processes, timeQuantum) {
-            for (let process of processes) {
-              process.remainingTime = process.burstTime; // Initialize remaining time
-            }
+          // Reset burst time from original input table.
+          TableData.forEach(pInTable => {
+              completedList.forEach(pInCompleted => {
+                  if (pInTable.processID==pInCompleted.processID) {
+                      pInCompleted.burstTime= pInTable.burstTime;
+                      pInCompleted.turnAroundTime = pInCompleted.completedTime - pInCompleted.arrivalTime;
+                      pInCompleted.waitingTime = pInCompleted.turnAroundTime - pInCompleted.burstTime;
+                  }
+              });
+          });
+
+          // Bind table data
+          $.each(completedList, function(key, process){
+              $('#tblResults > tbody:last-child').append(
+                  `<tr>
+                      <td id="tdProcessID">${process.processID}</td>
+                      <td id="tdArrivalTime">${process.arrivalTime}</td>
+                      <td id="tdBurstTime">${process.burstTime}</td>
+                      <td id="tdBurstTime">${process.completedTime}</td>
+                      <td id="tdBurstTime">${process.waitingTime}</td>
+                      <td id="tdBurstTime">${process.turnAroundTime}</td>
+                  </tr>`
+              );
+          });
+              
+          // Get average
+          var totalTurnaroundTime = 0;
+          var totalWaitingTime = 0;
+          var maxCompletedTime = 0;
+
+          $.each(completedList, function(key, process){
+              if (process.completedTime > maxCompletedTime) {
+                  maxCompletedTime = process.completedTime;
+              }
+              totalTurnaroundTime = totalTurnaroundTime + process.turnAroundTime;
+              totalWaitingTime = totalWaitingTime + process.waitingTime;
+          });
+
+          $('#avgTurnaroundTime').val( totalTurnaroundTime / completedList.length );
+          $('#avgWaitingTime').val( totalWaitingTime / completedList.length );
+          $('#throughput').val(completedList.length / maxCompletedTime);
           
-            findWaitingTime(processes, timeQuantum);
+      }    
+  }
+        // function Process(pid, burstTime, arrivalTime) {
+        //     this.pid = pid;
+        //     this.burstTime = burstTime;
+        //     this.arrivalTime = arrivalTime;
+        //     this.waitingTime = 0;
+        //     this.turnaroundTime = 0;
+        //     this.remainingTime = burstTime; // Used for tracking remaining burst time
+        //   }
           
-            console.log("PID\tBurst Time\tArrival Time\tWaiting Time\tTurnaround Time");
-            for (let process of processes) {
-              console.log(`${process.pid}\t${process.burstTime}\t\t${process.arrivalTime}\t\t${process.waitingTime.toFixed(2)}\t\t${process.turnaroundTime.toFixed(2)}`);
-            }
+        //   function findWaitingTime(processes, timeQuantum) {
+        //     let current_time = 0;
+        //     let completed = 0;
+        //     let queue = [];
           
-            findAverageTime(processes);
-          }
+        //     while (completed != processes.length) {
+        //       // Add processes that arrived at current time to the queue
+        //       for (let i = 0; i < processes.length; i++) {
+        //         if (processes[i].arrivalTime <= current_time && !queue.includes(processes[i])) {
+        //           queue.push(processes[i]);
+        //         }
+        //       }
           
-          // Example usage:
-          let processes = [
-            new Process(1, 5, 0),
-            new Process(2, 3, 2),
-            new Process(3, 2, 4)
-          ];
+        //       if (queue.length > 0) {
+        //         let process = queue.shift();
+        //         let timeSlice = Math.min(process.remainingTime, timeQuantum);
+        //         process.remainingTime -= timeSlice;
+        //         current_time += timeSlice;
           
-          let timeQuantum = 2;
+        //         process.waitingTime += current_time - process.burstTime - process.arrivalTime;
           
-          roundRobin(processes, timeQuantum);
-          // Output
-        });
+        //         if (process.remainingTime === 0) {
+        //           completed++;
+        //           process.turnaroundTime = process.burstTime + process.waitingTime;
+        //         } else {
+        //           queue.push(process); // Add unfinished process back to the queue
+        //         }
+        //       } else {
+        //         // No processes ready, advance time
+        //         current_time++;
+        //       }
+        //     }
+        //   }
+          
+        //   function findAverageTime(processes) {
+        //     let avgWaitingTime = 0;
+        //     let avgTurnaroundTime = 0;
+          
+        //     for (let process of processes) {
+        //       avgWaitingTime += process.waitingTime;
+        //       avgTurnaroundTime += process.turnaroundTime;
+        //     }
+          
+        //     avgWaitingTime /= processes.length;
+        //     avgTurnaroundTime /= processes.length;
+          
+        //     console.log("Average Waiting Time:", avgWaitingTime.toFixed(2));
+        //     console.log("Average Turnaround Time:", avgTurnaroundTime.toFixed(2));
+        //   }
+          
+        //   function roundRobin(processes, timeQuantum) {
+        //     for (let process of processes) {
+        //       process.remainingTime = process.burstTime; // Initialize remaining time
+        //     }
+          
+        //     findWaitingTime(processes, timeQuantum);
+          
+        //     console.log("PID\tBurst Time\tArrival Time\tWaiting Time\tTurnaround Time");
+        //     for (let process of processes) {
+        //       console.log(`${process.pid}\t${process.burstTime}\t\t${process.arrivalTime}\t\t${process.waitingTime.toFixed(2)}\t\t${process.turnaroundTime.toFixed(2)}`);
+        //     }
+          
+        //     findAverageTime(processes);
+        //   }
+          
+        //   // Example usage:
+        //   let processes = [
+        //     new Process(1, 5, 0),
+        //     new Process(2, 3, 2),
+        //     new Process(3, 2, 4)
+        //   ];
+          
+        //   let timeQuantum = 2;
+          
+        //   roundRobin(processes, timeQuantum);
+        //   // Output
+        );
