@@ -95,11 +95,11 @@ $(document).ready(
                     D = 0;
                   
                     (queue.length==0 )
-                    ueue.push(q);
+                    queue.push(q);
                       coun = 1;
                     
 
-                    nsole.log(queue[0].processID + " " + queue[queue.length-1].processID);    
+                    console.log(queue[0].processID + " " + queue[queue.length-1].processID);    
                     if (queue[0].burstTime < timeQuantumVal) {
                       D = 1;
                         process = queue.shift();
