@@ -1,4 +1,3 @@
-// https://www.geeksforgeeks.org/program-for-round-robin-scheduling-for-the-same-arrival-time/
 $(document).ready(
     function(){
         $(".form-group-time-quantum").show(1000);
@@ -11,9 +10,9 @@ $(document).ready(
             var burstTime = $('#burstTime');
 
             if(processID.val() === '' || arrivalTime.val() === '' || burstTime.val() === ''){
-                // processID.addClass('is-invalid');
-                // arrivalTime.addClass('is-invalid');
-                // burstTime.addClass('is-invalid');
+                processID.addClass('is-invalid');
+                arrivalTime.addClass('is-invalid');
+                burstTime.addClass('is-invalid');
                 return;
             }
 
@@ -65,7 +64,7 @@ $(document).ready(
                   time++;
                   addToQueue();
               }
-            
+            // console.log(i);
               selectProcessForRR();
               i = 1;
           }
@@ -81,15 +80,27 @@ $(document).ready(
                       processList.splice(i, 1);
                       queue.push(process);
                   }
+                }
               }
-          }
-          function selectProcessForRR() {
-              if (queue.length!=0) {
+              function selectProcessForRR() {
+                // queue.forEach(car => {
+                //     console.log(car.processID);
+                // });
+                
+                let coun = 0;
+                if (queue.length!=0) {
                   let q = queue.shift();
-                  queue.push(q);
-                                              
+                //   queue.push(q);
+                  
+                if(queue.length==0 )
+                {queue.push(q);
+                    // console.log(q.processID);
+                coun = 1;
+                }                  
                   if (queue[0].burstTime < timeQuantumVal) {
+                    
                       process = queue.shift();
+                    //   console.log(process.processID);
                       process.completedTime = time + process.burstTime;
                           
                       for (var index = 0; index < process.burstTime; index++) {
@@ -101,6 +112,7 @@ $(document).ready(
                   }
                   else if(queue[0].burstTime == timeQuantumVal){
                       process = queue.shift();
+                    //   console.log(process.processID);
                       process.completedTime = time + timeQuantumVal;
                       completedList.push(process);
 
@@ -111,15 +123,20 @@ $(document).ready(
                   }  
                   else if(queue[0].burstTime > timeQuantumVal){
                       process = queue[0];
+                    //   console.log(process.processID);
                       queue[0].burstTime = process.burstTime - timeQuantumVal;
 
                       for (var index = 0; index < timeQuantumVal; index++) {
                           time++;
                           addToQueue();
                       }
-                  }   
+                  }  
+                  if (coun != 1){
+                  queue.push(q);
+                //   console.log(q.processID);
+                  }
+                   
               }
-              i = 1;
           }
 
           // Fetch initial table data
