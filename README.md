@@ -4,7 +4,8 @@
 <h3>Description: </h3>
 
 <i>
-(just simulation) with any Python Language.
+(just simulation) with any Java Script Language.
+
   
 • (Gantt Chart provided).
 
