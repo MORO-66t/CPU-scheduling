@@ -65,12 +65,12 @@ $(document).ready(
                   time++;
                   addToQueue();
               }
-
+              // console.log(i);
               selectProcessForRR();
               i = 1;
           }
 
-            function addToQueue() {
+          function addToQueue() {
               for(var i = 0; i < processList.length; i++) {
                   if(processList[i].arrivalTime === time) {
                       var process = {
@@ -82,61 +82,70 @@ $(document).ready(
                       queue.push(process);
                   }
                 }
-            }
-
-            function selectProcessForRR() {
+              }
+              function selectProcessForRR() {
 
                 console.log(queue[0].processID + " " + queue[queue.length-1].processID);  
                 let coun = 0;
                 if (queue.length!=0) {
-                    if (D == 0 && i == 1){
-                        var q = queue.shift();
-                    }
-                    D = 0;
+                    if (D == 0){
+                    if (i == 1 ){
+                  var q = queue.shift();}}
+                  D = 0;
+                //   queue.push(q);
                   
-                    (queue.length==0 )
-                    queue.push(q);
-                      coun = 1;
-                    
-
-                    console.log(queue[0].processID + " " + queue[queue.length-1].processID);    
-                    if (queue[0].burstTime < timeQuantumVal) {
-                      D = 1;
-                        process = queue.shift();
-                        process.completedTime = time + process.burstTime;
-                            
-                        for (var index = 0; index < process.burstTime; index++) {
-                            time++;
-                            addToQueue(); 
-                        }
-                        completedList.push(process);
-
-                    }
-                    else if(queue[0].burstTime == timeQuantumVal){
-                        process = queue.shift();
-                        D = 1;
-                        process.completedTime = time + timeQuantumVal;
-                        completedList.push(process);
-
-                        for (var index = 0; index < timeQuantumVal; index++) {
-                            time++;
-                            addToQueue();   
-                        }
-                    }  
-                    else if(queue[0].burstTime > timeQuantumVal){
-                        process = queue[0];
-                        queue[0].burstTime = process.burstTime - timeQuantumVal;
-
-                        for (var index = 0; index < timeQuantumVal; index++) {
-                            time++;
-                            addToQueue();
-                        }
-                    }  
-                    if (q != null && i== 1 && coun != 1 ){
-                    queue.push(q);
-                    }  
+                if(queue.length==0 )
+                {queue.push(q);
+                    // console.log(q.processID);
+                coun = 1;
                 }
-           }
+                
+                console.log(queue[0].processID + " " + queue[queue.length-1].processID);    
+                  if (queue[0].burstTime < timeQuantumVal) {
+                    D = 1;
+                      process = queue.shift();
+                    //   console.log(process.processID);
+                      process.completedTime = time + process.burstTime;
+                          
+                      for (var index = 0; index < process.burstTime; index++) {
+                          time++;
+                          addToQueue(); 
+                      }
+                      completedList.push(process);
+
+                  }
+                  else if(queue[0].burstTime == timeQuantumVal){
+                      process = queue.shift();
+                      D = 1;
+                    //   console.log(process.processID);
+                      process.completedTime = time + timeQuantumVal;
+                      completedList.push(process);
+
+                      for (var index = 0; index < timeQuantumVal; index++) {
+                          time++;
+                          addToQueue();   
+                      }
+                  }  
+                  else if(queue[0].burstTime > timeQuantumVal){
+                      process = queue[0];
+                    //   console.log(process.processID);
+                      queue[0].burstTime = process.burstTime - timeQuantumVal;
+
+                      for (var index = 0; index < timeQuantumVal; index++) {
+                          time++;
+                          addToQueue();
+                      }
+                  }  
+                  if (q != null){
+                  if(i == 1){
+                  if (coun != 1 ){
+                  queue.push(q);
+                //   console.log(q.processID);
+                  }}}
+                  
+                   
+              }
+          }
 
           // Fetch initial table data
           var TableData = [];
@@ -195,4 +204,4 @@ $(document).ready(
           
       }    
   }
-  );
+);
