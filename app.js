@@ -58,13 +58,14 @@ $(document).ready(
           var time = 0;
           var queue = [];
           var i = 0;
+          var D = 0;
           while (processList.length > 0 || queue.length > 0) {
               addToQueue();
               while (queue.length == 0) {               
                   time++;
                   addToQueue();
               }
-            // console.log(i);
+              // console.log(i);
               selectProcessForRR();
               i = 1;
           }
@@ -83,22 +84,25 @@ $(document).ready(
                 }
               }
               function selectProcessForRR() {
-                // queue.forEach(car => {
-                //     console.log(car.processID);
-                // });
-                
+
+                console.log(queue[0].processID + " " + queue[queue.length-1].processID);  
                 let coun = 0;
                 if (queue.length!=0) {
-                  let q = queue.shift();
+                    if (D == 0){
+                    if (i == 1 ){
+                  var q = queue.shift();}}
+                  D = 0;
                 //   queue.push(q);
                   
                 if(queue.length==0 )
                 {queue.push(q);
                     // console.log(q.processID);
                 coun = 1;
-                }                  
+                }
+                
+                console.log(queue[0].processID + " " + queue[queue.length-1].processID);    
                   if (queue[0].burstTime < timeQuantumVal) {
-                    
+                    D = 1;
                       process = queue.shift();
                     //   console.log(process.processID);
                       process.completedTime = time + process.burstTime;
@@ -112,6 +116,7 @@ $(document).ready(
                   }
                   else if(queue[0].burstTime == timeQuantumVal){
                       process = queue.shift();
+                      D = 1;
                     //   console.log(process.processID);
                       process.completedTime = time + timeQuantumVal;
                       completedList.push(process);
@@ -131,10 +136,13 @@ $(document).ready(
                           addToQueue();
                       }
                   }  
-                  if (coun != 1){
+                  if (q != null){
+                  if(i == 1){
+                  if (coun != 1 ){
                   queue.push(q);
                 //   console.log(q.processID);
-                  }
+                  }}}
+                  
                    
               }
           }
